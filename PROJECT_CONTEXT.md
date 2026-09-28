@@ -36,13 +36,13 @@ npm run lint             # eslint (includes the strict react-hooks rules)
 npm run build
 ```
 
-Last verified state: typecheck, lint and build are clean, and the API was smoke-tested with curl. **The UI has not been visually verified in a browser** (the Chrome extension wasn't connected).
+Last verified state: typecheck, lint and build are clean, and the API was smoke-tested with curl. After the dashboard redesign, the home page (filters, theme toggle, phone width), login, logout and /admin/users were checked in Chrome. The report form, register and item detail pages have not been re-checked visually since the redesign.
 
 ## Architecture
 
 ```
 app/
-  page.tsx                  Dashboard (server, force-dynamic): hero, CategoryChart, StatsCards, <ListingExplorer/> in Suspense
+  page.tsx                  Dashboard (server, force-dynamic): OpenListingsCard, CategoryChart, RecoveryCard, <ListingExplorer/> in Suspense
   report/page.tsx           Report form page; reads ?type=&name=&category=&location= to prefill
   items/[id]/page.tsx       Detail (server, force-dynamic): facts, ContactActions, MatchList; notFound() for bad or missing ids
   not-found.tsx, error.tsx  Global states
@@ -53,15 +53,19 @@ app/
 components/
   items/listing-explorer    CLIENT. Filter state lives in the URL (search/status/category/sort/includeResolved/highlight),
                             300ms debounced search, fetches /api/items. Loading state is derived from a request key (no setState in effects)
-  items/item-card           Card + skeleton; "New" ring when ?highlight=<id>; shows matchCount badge
+  items/item-card           Card + skeleton; "New" ring when ?highlight=<id>; shows matchCount badge (used below lg)
+  items/item-table          Desktop (lg+) listings table with the same highlight / resolved / matchCount states
   items/item-meta           TypeBadge, CategoryIcon, CATEGORY_ICON map
   items/match-list          Score ring + ✓/✗ reason chips
   items/contact-actions     CLIENT. mailto (pre-written subject/body) or tel, copy, "Post it as a found item", Mark as reunited (PATCH + router.refresh)
   items/empty-state         Reusable empty/error block
   forms/report-form         CLIENT. Shared Zod schema for client validation; maps server 422 details to fields; toast + redirect to /?highlight=id
-  dashboard/stats-cards     4 counter cards (link to filters) + RecoveryNote
-  dashboard/category-chart  Lost vs found split bar + per-category bars (link to category filter)
-  layout/site-header        CLIENT. Logo, nav, header search (hidden on home), theme toggle, mobile Sheet menu
+  dashboard/stats-cards     DashCard + Pill shells; OpenListingsCard (found/lost/resolved split) and RecoveryCard (recovery-rate meter)
+  dashboard/category-chart  "Potential matches" card: lost vs found bars per category (link to category filter)
+  layout/site-header        CLIENT. Hero banner: greeting, live stat chips (/api/stats), tab nav, search, theme toggle,
+                            auth (initials avatar, admin Users link, logout / Log in), mobile Sheet menu
+  layout/fluted-glass       CLIENT. WebGL fluted-glass banner backdrop; pauses off-screen, still frame for reduced motion,
+                            falls back to the CSS .hero-bg when WebGL is unavailable
 lib/
   items.ts      SERVER-ONLY data layer. All Prisma access goes through here: listItems, getItem, getMatches, createItem,
                 updateItemStatus, getStats. DTOs: ItemSummary (no contact info), ItemDetail, MatchDTO, Stats
@@ -84,7 +88,7 @@ Client components import only **types** from `lib/items.ts`, never values (it's 
 - `lib/api.ts`: `requireUser()` and `requireAdmin()` return a user or a 401/403 Response.
 - Roles: STUDENT and ADMIN. Browsing is public. `/report` and `POST /api/items` need login, and the item is linked via `Item.userId`. The report form is prefilled with the user's name and email. Mark reunited/reopen is allowed for the reporter or an admin (`canManageItem`).
 - `/admin/users` is admin-only (anonymous → redirect to login, student → 404): user table with search, role select, deactivate/reactivate, and a create-user form. Admins can't demote or deactivate themselves.
-- `/login` and `/register` share `components/forms/auth-page.tsx`, and `?next=` is sanitized by `safeNext`. The header shows the user chip, a Users link for admins, and logout.
+- `/login` and `/register` share `components/forms/auth-page.tsx`, and `?next=` is sanitized by `safeNext`. The banner shows the user's initials avatar, a Users link for admins, and logout; the mobile menu shows the user chip.
 - Test accounts: `TEST_USERS` in `prisma/seed.ts`, one admin and one student. The student owns the Black Wallet listing.
 
 ## Data model
@@ -119,8 +123,9 @@ Tokenizer: lowercase, strip punctuation, drop stopwords, naive plural stripping,
 
 ## Design system
 
-- Tokens are in `app/globals.css`. The primary is indigo (`oklch(0.5 0.19 268)`). Custom semantic colours are `lost` / `lost-soft` (rose) and `found` / `found-soft` (emerald), used as `bg-lost-soft text-lost` and so on. Light and dark are both defined.
-- Look: rounded-2xl bordered cards with `shadow-xs` and a hover lift, max width `max-w-6xl`, Geist font. Avoid heavy gradients and glassmorphism.
+- Visual reference: the "Papersky" e-commerce analytics dashboard on Dribbble. Keep new screens consistent with it.
+- Tokens are in `app/globals.css`. The primary is near-black (black pill buttons). Accents are `lime` / `lime-soft` and `violet` / `violet-soft`; `lost` maps to violet and `found` to lime, still used as `bg-lost-soft text-lost` and so on. `shell` is the gray page backdrop and `panel` the dashboard surface. Light and dark are both defined.
+- Look: the whole app sits in one rounded panel (`rounded-[28px]`, `max-w-7xl`) under a dark green hero banner (WebGL fluted glass in `layout/fluted-glass`, CSS fallback `.hero-bg`, legibility overlay `.hero-shade`). Content cards are borderless white `rounded-3xl`; buttons, inputs and segmented controls are pills (`rounded-full`). Geist font.
 - Accessibility patterns: skip link, radiogroup semantics for segmented controls, `aria-invalid` / `aria-describedby` on form errors, and visible focus rings.
 
 ## Known limitations / ideas not done
