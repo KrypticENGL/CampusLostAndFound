@@ -89,9 +89,10 @@ vec3 scene(vec2 p) {
 vec4 logoAt(vec2 p) {
   if (u_hasLogo < 0.5) return vec4(0.0);
   float aspect = u_resolution.x / u_resolution.y;
-  vec2 size = vec2(0.62 * u_logoAspect, 0.62);
+  vec2 size = vec2(0.44 * u_logoAspect, 0.44);
   size *= min(1.0, aspect * 0.42 / size.x);
-  vec2 uv = (p - vec2(aspect * 0.72, 0.5)) / size + 0.5;
+  // Anchored to the right edge (inset ≈ the header's side padding), between the actions and search.
+  vec2 uv = (p - vec2(aspect - 0.1 - size.x * 0.5, 0.5)) / size + 0.5;
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return vec4(0.0);
   vec4 logo = texture2D(u_logo, uv);
   logo.a *= 0.6 + 0.4 * smoothstep(0.9, 1.6, aspect);

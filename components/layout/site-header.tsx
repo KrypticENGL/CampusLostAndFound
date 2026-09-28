@@ -192,7 +192,7 @@ export function SiteHeader({ user }: { user: SessionUser | null }) {
       {/* No-WebGL fallback; the canvas below paints over it once the shader runs. */}
       <div aria-hidden className="blinds pointer-events-none absolute inset-0" />
       {/* eslint-disable-next-line @next/next/no-img-element -- decorative SVG, no optimisation needed */}
-      <img src={BRAND_LOGO} alt="" aria-hidden className="blinds-light pointer-events-none absolute top-1/2 left-[72%] h-[62%] max-w-[42%] -translate-x-1/2 -translate-y-1/2 object-contain opacity-60 sm:opacity-100" />
+      <img src={BRAND_LOGO} alt="" aria-hidden className="blinds-light pointer-events-none absolute top-1/2 right-5 h-[44%] max-w-[42%] -translate-y-1/2 sm:right-8 object-contain opacity-60 sm:opacity-100" />
       <FlutedGlass logoSrc={BRAND_LOGO} />
       <div aria-hidden className="hero-shade pointer-events-none absolute inset-0" />
       <div className="relative flex flex-col px-5 pt-5 sm:px-8 sm:pt-7">
