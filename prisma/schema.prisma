@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum ItemType {
+  LOST
+  FOUND
+}
+
+enum ItemStatus {
+  OPEN
+  RESOLVED
+}
+
+enum Category {
+  ELECTRONICS
+  DOCUMENTS
+  ACCESSORIES
+  BOOKS
+  BAGS
+  OTHER
+}
+
+enum ContactType {
+  EMAIL
+  PHONE
+}
+
+model Item {
+  id           String      @id @default(cuid())
+  itemType     ItemType
+  status       ItemStatus  @default(OPEN)
+  name         String
+  category     Category
+  location     String
+  date         DateTime
+  description  String
+  contactName  String?
+  contactType  ContactType
+  contactValue String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([itemType, status])
+  @@index([category])
+  @@index([date])
+  @@index([createdAt])
+}
