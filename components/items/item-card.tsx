@@ -11,9 +11,9 @@ export function ItemCard({ item, highlight = false }: { item: ItemSummary; highl
     <Link
       href={`/items/${item.id}`}
       className={cn(
-        "group relative flex h-full flex-col rounded-2xl border bg-card p-5 shadow-xs transition-all duration-200",
-        "hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-        highlight && "ring-2 ring-primary/60 animate-in fade-in zoom-in-95 duration-500",
+        "group relative flex h-full flex-col rounded-2xl bg-panel p-5 transition-all duration-200",
+        "hover:-translate-y-0.5 hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+        highlight && "ring-2 ring-lime animate-in fade-in zoom-in-95 duration-500",
       )}
     >
       <div className="flex items-start gap-3">
@@ -22,7 +22,7 @@ export function ItemCard({ item, highlight = false }: { item: ItemSummary; highl
           <div className="flex items-center gap-2">
             <TypeBadge type={item.itemType} />
             {highlight && (
-              <span className="rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">
+              <span className="rounded-full bg-lime px-2 py-0.5 text-[11px] font-semibold text-white">
                 New
               </span>
             )}
@@ -56,7 +56,7 @@ export function ItemCard({ item, highlight = false }: { item: ItemSummary; highl
       </div>
 
       {item.matchCount > 0 && (
-        <div className="mt-3 flex items-center gap-1.5 rounded-lg bg-accent px-2.5 py-1.5 text-xs font-medium text-accent-foreground">
+        <div className="mt-3 flex items-center gap-1.5 rounded-full bg-accent px-2.5 py-1.5 text-xs font-medium text-accent-foreground">
           <Sparkles className="size-3.5" aria-hidden />
           {item.matchCount} potential {item.matchCount === 1 ? "match" : "matches"}
         </div>
@@ -67,7 +67,7 @@ export function ItemCard({ item, highlight = false }: { item: ItemSummary; highl
 
 export function ItemCardSkeleton() {
   return (
-    <div className="rounded-2xl border bg-card p-5" aria-hidden>
+    <div className="rounded-2xl bg-panel p-5" aria-hidden>
       <div className="flex gap-3">
         <div className="size-10 animate-pulse rounded-xl bg-muted" />
         <div className="flex-1 space-y-2">

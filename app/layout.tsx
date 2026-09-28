@@ -32,17 +32,21 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <a
             href="#main"
-            className="sr-only z-50 rounded-md bg-primary px-3 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+            className="sr-only z-50 rounded-full bg-primary px-3 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
           >
             Skip to content
           </a>
-          <SiteHeader user={user} />
-          <main id="main" className="flex-1">
-            {children}
-          </main>
-          <footer className="border-t py-6 text-center text-xs text-muted-foreground">
-            Campus Lost &amp; Found · Helping students get their things back
-          </footer>
+          <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col sm:p-4 lg:p-8">
+            <div className="flex flex-1 flex-col overflow-hidden bg-panel shadow-[0_30px_80px_-40px_rgb(0_0_0/0.35)] sm:rounded-[28px]">
+              <SiteHeader user={user} />
+              <main id="main" className="flex-1">
+                {children}
+              </main>
+              <footer className="px-6 py-6 text-center text-xs text-muted-foreground">
+                Campus Lost &amp; Found · Helping students get their things back
+              </footer>
+            </div>
+          </div>
           <Toaster richColors position="top-center" />
         </ThemeProvider>
       </body>

@@ -1,62 +1,73 @@
 import Link from "next/link";
+import { Crown } from "lucide-react";
 import type { Stats } from "@/lib/items";
+import { DashCard, Pill } from "./stats-cards";
 
-/** Lost vs found per category — plain CSS bars driven by live DB counts. */
+/** "Net Revenue Growth" card → potential matches, plus lost vs found per category (click to filter). */
 export function CategoryChart({ stats }: { stats: Stats }) {
-  const max = Math.max(1, ...stats.byCategory.map((c) => c.lost + c.found));
-  const openTotal = stats.lost + stats.found;
-  const lostPct = openTotal ? Math.round((stats.lost / openTotal) * 100) : 0;
+  const max = Math.max(1, ...stats.byCategory.flatMap((c) => [c.lost, c.found]));
 
   return (
-    <section aria-labelledby="chart-heading" className="flex h-full flex-col rounded-2xl border bg-card p-5 shadow-xs">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 id="chart-heading" className="font-semibold">
-            Open listings by category
-          </h2>
-          <p className="text-xs text-muted-foreground">Click a category to filter</p>
-        </div>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground" aria-hidden>
+    <DashCard
+      icon={Crown}
+      label="Potential matches"
+      labelledBy="chart-heading"
+      aside={
+        <span className="flex items-center gap-3 text-xs" aria-hidden>
           <span className="inline-flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-lost" /> Lost
+            <span className="size-2 rounded-full bg-violet" /> Lost
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-found" /> Found
+            <span className="size-2 rounded-full bg-lime" /> Found
           </span>
-        </div>
+        </span>
+      }
+    >
+      <div className="mt-6 flex items-center gap-2.5">
+        <span className="text-5xl font-medium tracking-tight tabular-nums">{stats.potentialMatches}</span>
+        <Pill>lost ↔ found</Pill>
+        <DotBurst className="ml-auto size-8 text-lime" />
       </div>
+      <p className="mt-2 text-sm text-muted-foreground">Pairs our matcher thinks belong together</p>
 
-      {/* Overall split */}
-      <div className="mt-4">
-        <div className="flex h-2.5 overflow-hidden rounded-full bg-muted" role="img" aria-label={`${stats.lost} lost and ${stats.found} found open listings`}>
-          <div className="bg-lost transition-all" style={{ width: `${lostPct}%` }} />
-          <div className="bg-found transition-all" style={{ width: `${openTotal ? 100 - lostPct : 0}%` }} />
-        </div>
-        <div className="mt-1.5 flex justify-between text-xs tabular-nums text-muted-foreground">
-          <span>{lostPct}% lost</span>
-          <span>{openTotal ? 100 - lostPct : 0}% found</span>
-        </div>
-      </div>
-
-      <ul className="mt-4 space-y-2.5">
+      <ul className="mt-6 space-y-3">
         {stats.byCategory.map((c) => (
           <li key={c.category}>
             <Link
               href={`/?category=${c.category}#listings`}
               scroll={false}
-              className="grid grid-cols-[6.5rem_1fr_2rem] items-center gap-3 rounded-md text-sm hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+              className="group grid grid-cols-[5.75rem_1fr_1.75rem] items-center gap-3 rounded-md text-sm focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
               aria-label={`${c.label}: ${c.lost} lost, ${c.found} found`}
             >
-              <span className="truncate text-muted-foreground">{c.label}</span>
-              <span className="flex h-2 overflow-hidden rounded-full bg-muted">
-                <span className="bg-lost" style={{ width: `${(c.lost / max) * 100}%` }} />
-                <span className="bg-found" style={{ width: `${(c.found / max) * 100}%` }} />
+              <span className="truncate text-muted-foreground group-hover:text-foreground">{c.label}</span>
+              <span className="grid gap-1">
+                <span className="h-1.5 rounded-full bg-violet transition-all" style={{ width: `${Math.max(2, (c.lost / max) * 100)}%`, opacity: c.lost ? 1 : 0.25 }} />
+                <span className="h-1.5 rounded-full bg-lime transition-all" style={{ width: `${Math.max(2, (c.found / max) * 100)}%`, opacity: c.found ? 1 : 0.25 }} />
               </span>
               <span className="text-right text-xs tabular-nums text-muted-foreground">{c.lost + c.found}</span>
             </Link>
           </li>
         ))}
       </ul>
-    </section>
+    </DashCard>
+  );
+}
+
+/** Dotted sunburst from the reference, drawn as SVG so it follows currentColor. */
+function DotBurst({ className }: { className?: string }) {
+  const dots = Array.from({ length: 12 }, (_, i) => {
+    const a = (i / 12) * Math.PI * 2;
+    return [
+      { x: 16 + Math.cos(a) * 13, y: 16 + Math.sin(a) * 13, r: 1.6 },
+      { x: 16 + Math.cos(a) * 7.5, y: 16 + Math.sin(a) * 7.5, r: 1.9 },
+    ];
+  }).flat();
+  return (
+    <svg viewBox="0 0 32 32" className={className} aria-hidden>
+      {dots.map((d, i) => (
+        <circle key={i} cx={d.x} cy={d.y} r={d.r} fill="currentColor" />
+      ))}
+      <circle cx="16" cy="16" r="2.2" fill="currentColor" />
+    </svg>
   );
 }

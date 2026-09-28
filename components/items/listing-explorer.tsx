@@ -26,6 +26,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ItemCard, ItemCardSkeleton } from "./item-card";
+import { ItemTable } from "./item-table";
 import { EmptyState } from "./empty-state";
 
 const STATUS_OPTIONS = [
@@ -132,7 +133,7 @@ export function ListingExplorer() {
           Category
         </Label>
         <Select value={category} onValueChange={(v) => setParam({ category: v })}>
-          <SelectTrigger id="category-filter" className="w-full md:w-40" aria-label="Filter by category">
+          <SelectTrigger id="category-filter" className="w-full rounded-full md:w-40" aria-label="Filter by category">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -150,7 +151,7 @@ export function ListingExplorer() {
           Sort by
         </Label>
         <Select value={sort} onValueChange={(v) => setParam({ sort: v })}>
-          <SelectTrigger id="sort-filter" className="w-full md:w-44" aria-label="Sort listings">
+          <SelectTrigger id="sort-filter" className="w-full rounded-full md:w-44" aria-label="Sort listings">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -165,7 +166,7 @@ export function ListingExplorer() {
       <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground select-none">
         <input
           type="checkbox"
-          className="size-4 accent-primary"
+          className="size-4 accent-lime"
           checked={includeResolved}
           onChange={(e) => setParam({ includeResolved: String(e.target.checked) })}
         />
@@ -175,12 +176,12 @@ export function ListingExplorer() {
   );
 
   return (
-    <section id="listings" aria-labelledby="listings-heading" className="scroll-mt-20">
+    <section id="listings" aria-labelledby="listings-heading" className="scroll-mt-4 rounded-3xl bg-card p-5 sm:p-6">
       <div className="flex flex-col gap-4">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 id="listings-heading" className="text-xl font-semibold">
-              Listings
+            <h2 id="listings-heading" className="text-2xl font-medium">
+              Recent listings
             </h2>
             <p className="text-sm text-muted-foreground" aria-live="polite">
               {state.kind === "ready"
@@ -190,11 +191,18 @@ export function ListingExplorer() {
                   : "Couldn't load listings"}
             </p>
           </div>
-          {hasQuery && (
-            <Button variant="ghost" size="sm" onClick={clearAll}>
-              <RotateCcw /> Reset
+          <div className="flex items-center gap-2">
+            {hasQuery && (
+              <Button variant="outline" className="h-9 rounded-full px-3.5" onClick={clearAll}>
+                <RotateCcw /> Reset
+              </Button>
+            )}
+            <Button asChild className="h-9 rounded-full px-4">
+              <Link href="/report">
+                <Plus /> Report item
+              </Link>
             </Button>
-          )}
+          </div>
         </div>
 
         {/* Search */}
@@ -209,7 +217,7 @@ export function ListingExplorer() {
             onKeyDown={(e) => e.key === "Enter" && setParam({ search: query.trim() || null })}
             placeholder="Search by item, description, location or category — try “wallet”"
             aria-label="Search listings"
-            className="h-11 rounded-xl bg-card pr-10 pl-10 text-base shadow-xs md:text-sm"
+            className="h-11 rounded-full border-transparent bg-muted pr-10 pl-10 text-base shadow-none md:text-sm dark:bg-muted"
           />
           {query && (
             <button
@@ -219,7 +227,7 @@ export function ListingExplorer() {
                 setParam({ search: null });
                 inputRef.current?.focus();
               }}
-              className="absolute top-1/2 right-2.5 grid size-6 -translate-y-1/2 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+              className="absolute top-1/2 right-3 grid size-6 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
               aria-label="Clear search"
             >
               <X className="size-4" />
@@ -229,7 +237,7 @@ export function ListingExplorer() {
 
         {/* Status + filters */}
         <div className="flex flex-wrap items-center gap-3">
-          <div role="radiogroup" aria-label="Filter by status" className="inline-flex rounded-xl border bg-muted/60 p-1">
+          <div role="radiogroup" aria-label="Filter by status" className="inline-flex rounded-full bg-muted p-1">
             {STATUS_OPTIONS.map((o) => {
               const active = status === o.value;
               return (
@@ -240,12 +248,12 @@ export function ListingExplorer() {
                   aria-checked={active}
                   onClick={() => setParam({ status: o.value })}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-sm font-medium transition-all focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+                    "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
                     active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {o.value !== "ALL" && (
-                    <span className={cn("size-1.5 rounded-full", o.value === "LOST" ? "bg-lost" : "bg-found")} aria-hidden />
+                    <span className={cn("size-1.5 rounded-full", o.value === "LOST" ? "bg-violet" : "bg-lime")} aria-hidden />
                   )}
                   {o.label}
                 </button>
@@ -257,7 +265,7 @@ export function ListingExplorer() {
 
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" className="ml-auto md:hidden">
+              <Button variant="outline" className="ml-auto h-9 rounded-full px-3.5 md:hidden">
                 <SlidersHorizontal />
                 Filters
                 {activeFilters > 0 && (
@@ -279,7 +287,7 @@ export function ListingExplorer() {
 
         {/* Results */}
         {state.kind === "loading" && (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }, (_, i) => (
               <ItemCardSkeleton key={i} />
             ))}
@@ -325,7 +333,11 @@ export function ListingExplorer() {
         )}
 
         {state.kind === "ready" && state.items.length > 0 && (
-          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <ItemTable items={state.items} highlight={highlight} className="hidden lg:block" />
+        )}
+
+        {state.kind === "ready" && state.items.length > 0 && (
+          <ul className="grid gap-4 sm:grid-cols-2 lg:hidden">
             {state.items.map((item) => (
               <li key={item.id}>
                 <ItemCard item={item} highlight={item.id === highlight} />
