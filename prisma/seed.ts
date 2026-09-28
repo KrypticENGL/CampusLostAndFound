@@ -71,6 +71,32 @@ const items: Prisma.ItemCreateInput[] = [
   { itemType: "FOUND", name: "Prescription Glasses", category: "ACCESSORIES", location: "Block B", date: daysAgo(8),
     description: "Black framed spectacles in a brown case, found in the Block B washroom corridor.",
     contactName: "Nikhil Joshi", contactType: "PHONE", contactValue: "+919811122233" },
+
+  // ---- RESOLVED: past reunions (lost report + the found report that matched it) ----
+  { itemType: "LOST", status: "RESOLVED", name: "Black Laptop Charger", category: "ELECTRONICS", location: "Library", date: daysAgo(24),
+    description: "65W black Dell laptop charger with a strip of blue tape on the cable. Left plugged in at a 1st floor study desk.",
+    contactName: "Arjun Malhotra", contactType: "EMAIL", contactValue: "arjun.m@campus.edu" },
+  { itemType: "FOUND", status: "RESOLVED", name: "Dell Laptop Charger", category: "ELECTRONICS", location: "Library", date: daysAgo(24),
+    description: "Black Dell laptop charger with blue tape on the cable, found at a study desk on the 1st floor.",
+    contactName: "Library Front Desk", contactType: "EMAIL", contactValue: "library@campus.edu" },
+  { itemType: "LOST", status: "RESOLVED", name: "Brown Leather Purse", category: "ACCESSORIES", location: "Auditorium", date: daysAgo(19),
+    description: "Small brown leather purse with a gold clasp, containing a library card and some cash. Lost after the orientation session.",
+    contactName: "Kavya Reddy", contactType: "PHONE", contactValue: "+919833344455" },
+  { itemType: "FOUND", status: "RESOLVED", name: "Brown Purse", category: "ACCESSORIES", location: "Auditorium", date: daysAgo(18),
+    description: "Brown leather purse with a gold clasp found under a seat in the auditorium after orientation.",
+    contactName: "Auditorium Staff", contactType: "EMAIL", contactValue: "events@campus.edu" },
+  { itemType: "LOST", status: "RESOLVED", name: "Physics Lab Record", category: "BOOKS", location: "Lab Complex", date: daysAgo(15),
+    description: "Blue physics lab record notebook with all my semester experiments. Name written on the first page.",
+    contactName: "Sahil Gupta", contactType: "EMAIL", contactValue: "sahil.g@campus.edu" },
+  { itemType: "FOUND", status: "RESOLVED", name: "Blue Lab Record Notebook", category: "BOOKS", location: "Lab Complex", date: daysAgo(14),
+    description: "Blue physics lab record notebook found on a bench in the physics lab. Has a student name on the first page.",
+    contactName: "Lab Assistant", contactType: "PHONE", contactValue: "+919000033333" },
+  { itemType: "LOST", status: "RESOLVED", name: "Red Sports Duffel Bag", category: "BAGS", location: "Sports Ground", date: daysAgo(28),
+    description: "Red Nike duffel bag with football boots and a towel inside. Left near the pavilion after the evening match.",
+    contactName: "Rahul Verma", contactType: "PHONE", contactValue: "+919877766655" },
+  { itemType: "FOUND", status: "RESOLVED", name: "Red Duffel Bag", category: "BAGS", location: "Sports Ground", date: daysAgo(27),
+    description: "Red Nike duffel bag with football boots inside, found near the pavilion. Kept at the sports office.",
+    contactName: "Sports Office", contactType: "EMAIL", contactValue: "sports.office@campus.edu" },
 ];
 
 async function main() {
