@@ -1,4 +1,5 @@
 import { PrismaClient, type Prisma } from "@prisma/client";
+import { hashPassword } from "../lib/password";
 
 const db = new PrismaClient();
 
@@ -8,6 +9,15 @@ function daysAgo(n: number): Date {
   d.setUTCDate(d.getUTCDate() - n);
   return d;
 }
+
+/**
+ * Test/dummy accounts for local development and demos. Do NOT use in production.
+ * Change these passwords (or delete the accounts) before deploying publicly.
+ */
+export const TEST_USERS = [
+  { name: "Test Admin", email: "admin@campus.test", password: "Admin@12345", role: "ADMIN" as const },
+  { name: "Test Student", email: "student@campus.test", password: "Student@12345", role: "STUDENT" as const },
+];
 
 const items: Prisma.ItemCreateInput[] = [
   // ---- LOST ----
@@ -65,8 +75,21 @@ const items: Prisma.ItemCreateInput[] = [
 
 async function main() {
   await db.item.deleteMany();
-  for (const data of items) await db.item.create({ data });
-  console.log(`Seeded ${items.length} items`);
+  await db.user.deleteMany(); // sessions cascade
+
+  const users: Record<string, string> = {};
+  for (const u of TEST_USERS) {
+    const { password, ...rest } = u;
+    const created = await db.user.create({ data: { ...rest, passwordHash: hashPassword(password) } });
+    users[u.email] = created.id;
+  }
+
+  // The test student owns the first listing (Black Wallet) so owner-only actions can be demoed.
+  for (const [i, data] of items.entries()) {
+    const owner = i === 0 ? { connect: { id: users["student@campus.test"] } } : undefined;
+    await db.item.create({ data: { ...data, user: owner } });
+  }
+  console.log(`Seeded ${TEST_USERS.length} test users and ${items.length} items`);
 }
 
 main()

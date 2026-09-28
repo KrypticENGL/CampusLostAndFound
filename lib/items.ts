@@ -26,6 +26,8 @@ export interface ItemDetail extends Omit<ItemSummary, "matchCount"> {
   contactType: Item["contactType"];
   contactValue: string;
   updatedAt: string;
+  /** Id of the account that reported the item (null for legacy/seeded listings). */
+  ownerId: string | null;
 }
 
 export interface MatchDTO {
@@ -76,6 +78,7 @@ function toDetail(item: Item): ItemDetail {
     contactName: item.contactName,
     contactType: item.contactType,
     contactValue: item.contactValue,
+    ownerId: item.userId,
     updatedAt: item.updatedAt.toISOString(),
   };
 }
@@ -108,16 +111,16 @@ function buildWhere(query: ListQuery): Prisma.ItemWhereInput {
   if (query.status !== "ALL") and.push({ itemType: query.status });
   if (query.category !== "ALL") and.push({ category: query.category });
 
-  // Every search word must appear in at least one searchable field (SQLite LIKE is case-insensitive for ASCII).
+  // Every search word must appear in at least one searchable field (case-insensitive ILIKE).
   const words = query.search.split(/\s+/).filter(Boolean).slice(0, 8);
   for (const word of words) {
     const lower = word.toLowerCase();
     const categoryHits = CATEGORIES.filter((c) => c.label.toLowerCase().includes(lower)).map((c) => c.value);
     and.push({
       OR: [
-        { name: { contains: word } },
-        { description: { contains: word } },
-        { location: { contains: word } },
+        { name: { contains: word, mode: "insensitive" } },
+        { description: { contains: word, mode: "insensitive" } },
+        { location: { contains: word, mode: "insensitive" } },
         ...(categoryHits.length ? [{ category: { in: categoryHits } }] : []),
       ],
     });
@@ -156,7 +159,7 @@ export async function getMatches(id: string): Promise<MatchDTO[] | null> {
     .map((m) => ({ item: toSummary(m.item), score: m.score, reasons: m.reasons }));
 }
 
-export async function createItem(input: CreateItemInput): Promise<ItemDetail> {
+export async function createItem(input: CreateItemInput, userId: string): Promise<ItemDetail> {
   const item = await db.item.create({
     data: {
       itemType: input.itemType,
@@ -165,6 +168,7 @@ export async function createItem(input: CreateItemInput): Promise<ItemDetail> {
       location: input.location,
       date: parseDateOnly(input.date),
       description: input.description,
+      userId,
       contactName: input.contactName || null,
       contactType: input.contactType,
       contactValue:

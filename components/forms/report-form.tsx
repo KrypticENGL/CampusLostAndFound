@@ -24,6 +24,8 @@ export interface ReportDefaults {
   name?: string;
   category?: Category;
   location?: string;
+  contactName?: string;
+  contactValue?: string;
 }
 
 function Field({
@@ -75,9 +77,9 @@ export function ReportForm({ defaults }: { defaults: ReportDefaults }) {
     location: defaults.location ?? "",
     date: today,
     description: "",
-    contactName: "",
+    contactName: defaults.contactName ?? "",
     contactType: "EMAIL",
-    contactValue: "",
+    contactValue: defaults.contactValue ?? "",
   });
   const [errors, setErrors] = useState<Errors>({});
   const [touched, setTouched] = useState<Set<string>>(new Set());

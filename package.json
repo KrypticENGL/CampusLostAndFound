@@ -7,11 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:setup": "prisma migrate dev --name init && prisma db seed",
+    "db:setup": "prisma migrate deploy && prisma db seed",
     "db:seed": "prisma db seed",
     "db:reset": "prisma migrate reset --force",
     "typecheck": "tsc --noEmit",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:migrate": "prisma migrate dev"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum ItemType {
@@ -43,6 +44,8 @@ model Item {
   contactName  String?
   contactType  ContactType
   contactValue String
+  userId       String?
+  user         User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
@@ -50,4 +53,35 @@ model Item {
   @@index([category])
   @@index([date])
   @@index([createdAt])
+  @@index([userId])
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(STUDENT)
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  items        Item[]
+  sessions     Session[]
+}
+
+/// Opaque login sessions. Only a SHA-256 hash of the cookie token is stored.
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

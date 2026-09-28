@@ -81,6 +81,42 @@ export type ListQuery = z.infer<typeof listQuerySchema>;
 
 export const updateStatusSchema = z.object({ status: z.enum(["OPEN", "RESOLVED"]) });
 
+// ---- Users ----
+
+export const roleSchema = z.enum(["STUDENT", "ADMIN"], { error: "Choose a role" });
+
+const emailField = z
+  .string({ error: "Email is required" })
+  .trim()
+  .toLowerCase()
+  .pipe(z.email("Enter a valid email address"));
+
+export const passwordField = z
+  .string({ error: "Password is required" })
+  .min(8, "Use at least 8 characters")
+  .max(72, "Keep it under 72 characters")
+  .regex(/[A-Za-z]/, "Include at least one letter")
+  .regex(/[0-9]/, "Include at least one number");
+
+export const registerSchema = z.object({
+  name: text("Name is required").min(2, "Name must be at least 2 characters").max(60, "Keep the name under 60 characters"),
+  email: emailField,
+  password: passwordField,
+});
+
+export const adminCreateUserSchema = registerSchema.extend({ role: roleSchema });
+
+export const loginSchema = z.object({
+  email: emailField,
+  password: z.string({ error: "Password is required" }).min(1, "Password is required"),
+});
+
+export const updateUserSchema = z
+  .object({ role: roleSchema.optional(), active: z.boolean().optional() })
+  .refine((d) => d.role !== undefined || d.active !== undefined, "Nothing to update");
+
+export type RegisterInput = z.infer<typeof registerSchema>;
+
 /** Flatten Zod issues into { field: firstMessage } for forms and API responses. */
 export function fieldErrors(error: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {};

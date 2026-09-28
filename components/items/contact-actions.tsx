@@ -19,7 +19,7 @@ export function contactHref(item: ItemDetail): string {
   return `mailto:${item.contactValue}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
-export function ContactActions({ item }: { item: ItemDetail }) {
+export function ContactActions({ item, canManage }: { item: ItemDetail; canManage: boolean }) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -99,10 +99,12 @@ export function ContactActions({ item }: { item: ItemDetail }) {
         </Button>
       )}
 
-      <Button variant={resolved ? "outline" : "secondary"} className="h-10 w-full" onClick={toggleResolved} disabled={saving}>
-        {saving ? <Loader2 className="animate-spin" /> : resolved ? <RotateCcw /> : <CheckCircle2 />}
-        {resolved ? "Reopen listing" : "Mark as reunited"}
-      </Button>
+      {canManage && (
+        <Button variant={resolved ? "outline" : "secondary"} className="h-10 w-full" onClick={toggleResolved} disabled={saving}>
+          {saving ? <Loader2 className="animate-spin" /> : resolved ? <RotateCcw /> : <CheckCircle2 />}
+          {resolved ? "Reopen listing" : "Mark as reunited"}
+        </Button>
+      )}
       <p className="text-center text-xs text-muted-foreground">
         {item.contactType === "EMAIL" ? "Opens your email app with a pre-written message." : "Opens your phone dialer."}
       </p>

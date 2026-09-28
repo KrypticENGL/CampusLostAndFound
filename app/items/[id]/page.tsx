@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, Clock, MapPin, Sparkles, Tag } from "lucide-react";
 import { getItem, getMatches } from "@/lib/items";
 import { isValidId } from "@/lib/api";
+import { canManageItem, getCurrentUser } from "@/lib/auth";
 import { CATEGORY_LABEL } from "@/lib/constants";
 import { formatDate, formatRelative } from "@/lib/dates";
 import { CategoryIcon, TypeBadge } from "@/components/items/item-meta";
@@ -29,6 +30,7 @@ export default async function ItemPage({ params }: PageProps<"/items/[id]">) {
   const data = await load(id);
   if (!data) notFound();
   const { item, matches } = data;
+  const canManage = canManageItem(await getCurrentUser(), item.ownerId);
 
   const facts = [
     { icon: Tag, label: "Category", value: CATEGORY_LABEL[item.category] },
@@ -80,7 +82,7 @@ export default async function ItemPage({ params }: PageProps<"/items/[id]">) {
 
         <aside className="lg:row-span-2">
           <div className="rounded-2xl border bg-card p-5 shadow-xs lg:sticky lg:top-24">
-            <ContactActions item={item} />
+            <ContactActions item={item} canManage={canManage} />
           </div>
         </aside>
 

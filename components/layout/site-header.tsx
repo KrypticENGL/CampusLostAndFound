@@ -4,7 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { Menu, Moon, Plus, Search, SearchCheck, Sun } from "lucide-react";
+import { LogIn, LogOut, Menu, Moon, Plus, Search, SearchCheck, Sun, Users } from "lucide-react";
+import { toast } from "sonner";
+import type { SessionUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,8 +75,37 @@ function HeaderSearch({ className, onDone }: { className?: string; onDone?: () =
   );
 }
 
-export function SiteHeader() {
+function initials(name: string) {
+  return name.trim().split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+}
+
+function useLogout() {
+  const router = useRouter();
+  return async () => {
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => null);
+    toast.success("Logged out");
+    router.push("/");
+    router.refresh();
+  };
+}
+
+function UserChip({ user }: { user: SessionUser }) {
+  return (
+    <span className="flex min-w-0 items-center gap-2">
+      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent text-xs font-semibold text-accent-foreground" aria-hidden>
+        {initials(user.name)}
+      </span>
+      <span className="min-w-0 text-left leading-tight">
+        <span className="block truncate text-sm font-medium">{user.name}</span>
+        <span className="block text-[11px] text-muted-foreground">{user.role === "ADMIN" ? "Admin" : "Student"}</span>
+      </span>
+    </span>
+  );
+}
+
+export function SiteHeader({ user }: { user: SessionUser | null }) {
   const pathname = usePathname();
+  const logout = useLogout();
   const [open, setOpen] = useState(false);
   const isHome = pathname === "/";
 
@@ -98,6 +129,27 @@ export function SiteHeader() {
         <div className="ml-auto flex items-center gap-2">
           {!isHome && <HeaderSearch className="hidden w-56 lg:block" />}
           <ThemeToggle />
+          {user ? (
+            <div className="hidden items-center gap-1 md:flex">
+              {user.role === "ADMIN" && (
+                <Button asChild variant="ghost" size="lg">
+                  <Link href="/admin/users">
+                    <Users /> Users
+                  </Link>
+                </Button>
+              )}
+              <div className="ml-1 max-w-40"><UserChip user={user} /></div>
+              <Button variant="ghost" size="icon-lg" aria-label="Log out" onClick={logout}>
+                <LogOut />
+              </Button>
+            </div>
+          ) : (
+            <Button asChild variant="ghost" size="lg" className="hidden md:inline-flex">
+              <Link href={`/login?next=${encodeURIComponent(pathname)}`}>
+                <LogIn /> Log in
+              </Link>
+            </Button>
+          )}
           <Button asChild size="lg" className="hidden px-3.5 sm:inline-flex">
             <Link href="/report">
               <Plus /> Report item
@@ -128,6 +180,24 @@ export function SiteHeader() {
                     </Link>
                   ))}
                 </nav>
+                {user ? (
+                  <div className="grid gap-2 rounded-xl border p-3">
+                    <UserChip user={user} />
+                    {user.role === "ADMIN" && (
+                      <Link href="/admin/users" onClick={() => setOpen(false)} className="rounded-md px-2 py-1.5 text-sm hover:bg-muted">
+                        Manage users
+                      </Link>
+                    )}
+                    <Button variant="outline" onClick={() => { setOpen(false); logout(); }}>
+                      <LogOut /> Log out
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button asChild variant="outline"><Link href="/login" onClick={() => setOpen(false)}>Log in</Link></Button>
+                    <Button asChild variant="outline"><Link href="/register" onClick={() => setOpen(false)}>Sign up</Link></Button>
+                  </div>
+                )}
                 <Button asChild>
                   <Link href="/report" onClick={() => setOpen(false)}>
                     <Plus /> Report item

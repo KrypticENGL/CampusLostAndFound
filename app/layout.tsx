@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/layout/site-header";
+import { getCurrentUser } from "@/lib/auth";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,7 +24,8 @@ export const metadata: Metadata = {
   description: "Report, search and reunite lost items across campus — with automatic lost ↔ found matching.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const user = await getCurrentUser();
   return (
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
@@ -34,7 +36,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           >
             Skip to content
           </a>
-          <SiteHeader />
+          <SiteHeader user={user} />
           <main id="main" className="flex-1">
             {children}
           </main>

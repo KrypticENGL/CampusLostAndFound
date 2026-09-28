@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createItem, getMatches, listItems } from "@/lib/items";
 import { createItemSchema, fieldErrors, listQuerySchema } from "@/lib/validation";
-import { jsonError, serverError } from "@/lib/api";
+import { jsonError, requireUser, serverError } from "@/lib/api";
 
 export async function GET(req: NextRequest) {
   const parsed = listQuerySchema.safeParse(Object.fromEntries(req.nextUrl.searchParams));
@@ -15,12 +15,14 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const user = await requireUser();
+  if (user instanceof Response) return user;
   const body = await req.json().catch(() => undefined);
   if (body === undefined) return jsonError(400, "Request body must be valid JSON");
   const parsed = createItemSchema.safeParse(body);
   if (!parsed.success) return jsonError(422, "Please fix the highlighted fields", fieldErrors(parsed.error));
   try {
-    const item = await createItem(parsed.data);
+    const item = await createItem(parsed.data, user.id);
     const matches = await getMatches(item.id);
     return NextResponse.json({ item, matchCount: matches?.length ?? 0 }, { status: 201 });
   } catch (err) {

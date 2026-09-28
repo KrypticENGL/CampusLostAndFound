@@ -2,18 +2,22 @@
 
 Report, search and reunite lost items on campus, with deterministic lost ↔ found matching.
 
-**Stack:** Next.js 16 (App Router) · TypeScript · Tailwind v4 · shadcn/ui · Lucide · Prisma 6 · SQLite · Zod
+**Stack:** Next.js 16 (App Router) · TypeScript · Tailwind v4 · shadcn/ui · Lucide · Prisma 6 · Supabase Postgres · Zod
 
 ## Run
 
 ```bash
 npm install            # also runs `prisma generate`
-cp .env.example .env   # DATABASE_URL="file:./dev.db"
-npm run db:setup       # migrate + seed 16 demo listings
+cp .env.example .env   # fill in your Supabase DATABASE_URL and DIRECT_URL
+npm run db:setup       # apply migrations + seed 16 demo listings
 npm run dev            # http://localhost:3000  (use `npm run dev -- -p 3100` if 3000 is busy)
 ```
 
 `npm run db:seed` resets the demo data.
+
+## Test accounts
+
+`npm run db:seed` creates a test admin and a test student. Their emails and passwords are in `TEST_USERS` in `prisma/seed.ts`. The student owns the "Black Wallet" listing. **Change or delete these accounts before a public deployment.**
 
 ## API
 
@@ -25,6 +29,13 @@ npm run dev            # http://localhost:3000  (use `npm run dev -- -p 3100` if
 | PATCH | `/api/items/:id` | `{ status: "OPEN" \| "RESOLVED" }` to mark an item as reunited |
 | GET | `/api/items/:id/matches` | Ranked opposite-type matches with reasons |
 | GET | `/api/stats` | Dashboard counters and category breakdown |
+| POST | `/api/auth/register` | Public sign-up (always STUDENT), signs in → 201, 409 duplicate email |
+| POST | `/api/auth/login` · `/api/auth/logout` | Session cookie login/logout (401 bad credentials, 403 deactivated) |
+| GET | `/api/auth/me` | Current user or null |
+| GET/POST | `/api/users` | Admin only: list / create users with a role |
+| PATCH | `/api/users/:id` | Admin only: `{ role?, active? }`, can't demote or deactivate self |
+
+Creating an item requires login (401). Changing an item's status requires the reporter or an admin (403).
 
 ## Matching (`lib/matching.ts`)
 
