@@ -10,7 +10,7 @@ import { EmptyState } from "./empty-state";
 function ScoreRing({ score }: { score: number }) {
   const r = 20;
   const c = 2 * Math.PI * r;
-  const tone = score >= 75 ? "text-found" : score >= 55 ? "text-primary" : "text-amber-500";
+  const tone = score >= 75 ? "text-found" : score >= 55 ? "text-primary" : "text-muted-foreground";
   return (
     <div className="relative grid size-14 shrink-0 place-items-center" role="img" aria-label={`${score}% match`}>
       <svg viewBox="0 0 48 48" className="absolute inset-0 -rotate-90">

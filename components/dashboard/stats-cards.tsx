@@ -53,7 +53,7 @@ export function OpenListingsCard({ stats }: { stats: Stats }) {
 
   const breakdown = [
     { label: "Lost", value: stats.lost, href: "/?status=LOST#listings", bar: "bg-lost", share: pct(stats.lost, stats.total) },
-    { label: "Found", value: stats.found, href: "/?status=FOUND#listings", bar: "bg-lime", share: pct(stats.found, stats.total) },
+    { label: "Found", value: stats.found, href: "/?status=FOUND#listings", bar: "bg-gold", share: pct(stats.found, stats.total) },
     { label: "Resolved", value: stats.resolved, href: "/?includeResolved=true#listings", bar: "bg-foreground", share: pct(stats.resolved, stats.total) },
   ];
 
@@ -62,7 +62,7 @@ export function OpenListingsCard({ stats }: { stats: Stats }) {
       <div className="mt-6 flex items-center gap-2.5">
         <span className="text-5xl font-medium tracking-tight tabular-nums">{open}</span>
         <Pill>{lostPct}% lost</Pill>
-        <Sun className="ml-auto size-8 text-lime" strokeWidth={1.5} aria-hidden />
+        <Sun className="ml-auto size-8 text-gold" strokeWidth={1.5} aria-hidden />
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
         {stats.resolved ? (
@@ -80,8 +80,8 @@ export function OpenListingsCard({ stats }: { stats: Stats }) {
           role="img"
           aria-label={`${foundPct}% found, ${lostPct}% lost, the rest resolved`}
         >
-          <div className="bg-gradient-to-r from-lime/70 to-lime" style={{ width: `${foundPct}%` }} />
-          <div className="stripes bg-violet-soft" style={{ width: `${lostPct}%` }} />
+          <div className="bg-gradient-to-r from-gold/70 to-gold" style={{ width: `${foundPct}%` }} />
+          <div className="stripes bg-navy-soft" style={{ width: `${lostPct}%` }} />
         </div>
         <div className="mt-1 flex justify-between text-[10px] text-muted-foreground tabular-nums" aria-hidden>
           {[0, 25, 50, 75, 100].map((t) => (
@@ -95,7 +95,7 @@ export function OpenListingsCard({ stats }: { stats: Stats }) {
             className="absolute top-0 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-card px-3 py-1.5 text-sm font-medium shadow-[0_6px_20px_-6px_rgb(0_0_0/0.25)] ring-1 ring-border"
             style={{ left: `clamp(4.5rem, ${foundPct}%, calc(100% - 4.5rem))` }}
           >
-            {stats.found} found <Pill className="h-5 bg-lime text-[10px] text-white">{foundPct}%</Pill>
+            {stats.found} found <Pill className="h-5 bg-gold text-[10px] text-gold-foreground">{foundPct}%</Pill>
           </span>
         </div>
       </div>
@@ -151,7 +151,7 @@ export function RecoveryCard({ stats }: { stats: Stats }) {
           </div>
           <p className="mt-5 text-sm text-muted-foreground">
             Matches found <span className="font-medium text-foreground">{stats.potentialMatches}</span>
-            <ArrowUpRight className="ml-0.5 inline size-3.5 text-lime" aria-hidden />
+            <ArrowUpRight className="ml-0.5 inline size-3.5 text-gold" aria-hidden />
           </p>
         </div>
         <div className="flex h-24 min-w-0 items-end justify-end gap-[3px] overflow-hidden" role="img" aria-label={`${rate}% of all reported items recovered`}>
@@ -162,7 +162,7 @@ export function RecoveryCard({ stats }: { stats: Stats }) {
             return (
               <span
                 key={i}
-                className={cn("w-1.5 shrink-0 rounded-full sm:w-2", on ? "bg-gradient-to-t from-lime to-lime/40" : "bg-muted")}
+                className={cn("w-1.5 shrink-0 rounded-full sm:w-2", on ? "bg-gradient-to-t from-gold to-gold/40" : "bg-muted")}
                 style={{ height: `${Math.min(h, 96)}px` }}
               />
             );
@@ -186,14 +186,14 @@ export function RecoveryCard({ stats }: { stats: Stats }) {
               <dd className="mt-1 flex items-center gap-2 font-medium tabular-nums">
                 {stats.found}
                 <span className="h-1.5 w-6 overflow-hidden rounded-full bg-muted" aria-hidden>
-                  <span className="block h-full rounded-full bg-violet" style={{ width: `${pct(stats.found, stats.lost + stats.found)}%` }} />
+                  <span className="block h-full rounded-full bg-navy" style={{ width: `${pct(stats.found, stats.lost + stats.found)}%` }} />
                 </span>
               </dd>
             </div>
           </dl>
           <p className="mt-3 text-sm text-muted-foreground">
             Recognise something?{" "}
-            <Link href="/?status=FOUND#listings" scroll={false} className="text-violet hover:underline">
+            <Link href="/?status=FOUND#listings" scroll={false} className="text-navy hover:underline">
               Browse found items
             </Link>
           </p>

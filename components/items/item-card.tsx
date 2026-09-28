@@ -13,7 +13,7 @@ export function ItemCard({ item, highlight = false }: { item: ItemSummary; highl
       className={cn(
         "group relative flex h-full flex-col rounded-2xl bg-panel p-5 transition-all duration-200",
         "hover:-translate-y-0.5 hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-        highlight && "ring-2 ring-lime animate-in fade-in zoom-in-95 duration-500",
+        highlight && "ring-2 ring-gold animate-in fade-in zoom-in-95 duration-500",
       )}
     >
       <div className="flex items-start gap-3">
@@ -22,7 +22,7 @@ export function ItemCard({ item, highlight = false }: { item: ItemSummary; highl
           <div className="flex items-center gap-2">
             <TypeBadge type={item.itemType} />
             {highlight && (
-              <span className="rounded-full bg-lime px-2 py-0.5 text-[11px] font-semibold text-white">
+              <span className="rounded-full bg-gold px-2 py-0.5 text-[11px] font-semibold text-gold-foreground">
                 New
               </span>
             )}

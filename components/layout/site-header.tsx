@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { FlutedGlass } from "./fluted-glass";
 
+/** Amity University crest (traced SVG), shown through the fluted-glass banner. */
+const BRAND_LOGO = "/brand/logo.svg";
+
 const NAV = [
   { href: "/", label: "Overview", match: (path: string, status: string | null) => path === "/" && !status },
   { href: "/?status=LOST#listings", label: "Lost", match: (path: string, status: string | null) => path === "/" && status === "LOST" },
@@ -186,7 +189,11 @@ export function SiteHeader({ user }: { user: SessionUser | null }) {
 
   return (
     <header className="hero-bg relative isolate overflow-hidden text-white">
-      <FlutedGlass />
+      {/* No-WebGL fallback; the canvas below paints over it once the shader runs. */}
+      <div aria-hidden className="blinds pointer-events-none absolute inset-0" />
+      {/* eslint-disable-next-line @next/next/no-img-element -- decorative SVG, no optimisation needed */}
+      <img src={BRAND_LOGO} alt="" aria-hidden className="blinds-light pointer-events-none absolute top-1/2 left-[72%] h-[62%] max-w-[42%] -translate-x-1/2 -translate-y-1/2 object-contain opacity-60 sm:opacity-100" />
+      <FlutedGlass logoSrc={BRAND_LOGO} />
       <div aria-hidden className="hero-shade pointer-events-none absolute inset-0" />
       <div className="relative flex flex-col px-5 pt-5 sm:px-8 sm:pt-7">
         <div className="flex items-start justify-between gap-4">
@@ -244,7 +251,7 @@ export function SiteHeader({ user }: { user: SessionUser | null }) {
               <SheetContent side="right" className="w-72">
                 <SheetHeader>
                   <SheetTitle className="flex items-center gap-2">
-                    <SearchCheck className="size-4.5 text-lime" aria-hidden /> Menu
+                    <SearchCheck className="size-4.5 text-gold" aria-hidden /> Menu
                   </SheetTitle>
                 </SheetHeader>
                 <div className="grid gap-4 px-4">

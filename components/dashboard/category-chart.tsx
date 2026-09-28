@@ -15,10 +15,10 @@ export function CategoryChart({ stats }: { stats: Stats }) {
       aside={
         <span className="flex items-center gap-3 text-xs" aria-hidden>
           <span className="inline-flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-violet" /> Lost
+            <span className="size-2 rounded-full bg-navy" /> Lost
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-lime" /> Found
+            <span className="size-2 rounded-full bg-gold" /> Found
           </span>
         </span>
       }
@@ -26,7 +26,7 @@ export function CategoryChart({ stats }: { stats: Stats }) {
       <div className="mt-6 flex items-center gap-2.5">
         <span className="text-5xl font-medium tracking-tight tabular-nums">{stats.potentialMatches}</span>
         <Pill>lost ↔ found</Pill>
-        <DotBurst className="ml-auto size-8 text-lime" />
+        <DotBurst className="ml-auto size-8 text-gold" />
       </div>
       <p className="mt-2 text-sm text-muted-foreground">Pairs our matcher thinks belong together</p>
 
@@ -41,8 +41,8 @@ export function CategoryChart({ stats }: { stats: Stats }) {
             >
               <span className="truncate text-muted-foreground group-hover:text-foreground">{c.label}</span>
               <span className="grid gap-1">
-                <span className="h-1.5 rounded-full bg-violet transition-all" style={{ width: `${Math.max(2, (c.lost / max) * 100)}%`, opacity: c.lost ? 1 : 0.25 }} />
-                <span className="h-1.5 rounded-full bg-lime transition-all" style={{ width: `${Math.max(2, (c.found / max) * 100)}%`, opacity: c.found ? 1 : 0.25 }} />
+                <span className="h-1.5 rounded-full bg-navy transition-all" style={{ width: `${Math.max(2, (c.lost / max) * 100)}%`, opacity: c.lost ? 1 : 0.25 }} />
+                <span className="h-1.5 rounded-full bg-gold transition-all" style={{ width: `${Math.max(2, (c.found / max) * 100)}%`, opacity: c.found ? 1 : 0.25 }} />
               </span>
               <span className="text-right text-xs tabular-nums text-muted-foreground">{c.lost + c.found}</span>
             </Link>

@@ -11,8 +11,9 @@ void main() {
 `;
 
 /**
- * A sunlit field of tall grass (procedural noise), seen through reeded / fluted glass:
- * each vertical flute acts as a half-cylinder lens that squeezes and mirrors a slice of the scene.
+ * A softly lit backdrop (procedural noise) seen through reeded / fluted glass: each vertical flute
+ * acts as a half-cylinder lens that squeezes and mirrors a slice of the scene. The brand logo is
+ * composited mostly unrefracted on top, keeping only a light trace of the flutes (LOGO_GLASS).
  */
 const FRAGMENT_SHADER = `
 #ifdef GL_FRAGMENT_PRECISION_HIGH
@@ -25,6 +26,9 @@ uniform vec2 u_resolution;
 uniform float u_time;
 uniform vec2 u_pointer;
 uniform float u_dpr;
+uniform sampler2D u_logo;
+uniform float u_logoAspect;  // width / height of the logo texture
+uniform float u_hasLogo;     // 0 until the logo image has loaded
 
 float hash(vec2 p) {
   vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -69,17 +73,33 @@ vec3 scene(vec2 p) {
   float sun = exp(-dot(d, d) * 2.4);
   float halo = exp(-dot(d, d) * 0.4);
 
-  vec3 deep = vec3(0.05, 0.08, 0.022);
-  vec3 moss = vec3(0.21, 0.31, 0.06);
-  vec3 lime = vec3(0.56, 0.67, 0.12);
-  vec3 gold = vec3(0.95, 0.9, 0.4);
+  vec3 deep = vec3(0.02, 0.06, 0.18);
+  vec3 moss = vec3(0.07, 0.2, 0.5);
+  vec3 azure = vec3(0.2, 0.42, 0.82);
+  vec3 gold = vec3(0.98, 0.72, 0.12);
 
   vec3 col = mix(deep, moss, smoothstep(0.2, 0.7, b) * (0.45 + 0.55 * halo));
-  col = mix(col, lime, smoothstep(0.45, 0.9, b) * (0.25 + 0.75 * halo));
+  col = mix(col, azure, smoothstep(0.45, 0.9, b) * (0.25 + 0.75 * halo));
   col += gold * sun * (0.2 + 0.8 * smoothstep(0.35, 0.85, b));
   col *= 0.72 + 0.28 * smoothstep(0.0, 0.55, p.y);            // darker near the ground
   return col;
 }
+
+// Logo colour + coverage at scene position p (same coordinate space as scene()).
+vec4 logoAt(vec2 p) {
+  if (u_hasLogo < 0.5) return vec4(0.0);
+  float aspect = u_resolution.x / u_resolution.y;
+  vec2 size = vec2(0.62 * u_logoAspect, 0.62);
+  size *= min(1.0, aspect * 0.42 / size.x);
+  vec2 uv = (p - vec2(aspect * 0.72, 0.5)) / size + 0.5;
+  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return vec4(0.0);
+  vec4 logo = texture2D(u_logo, uv);
+  logo.a *= 0.6 + 0.4 * smoothstep(0.9, 1.6, aspect);
+  return logo;
+}
+
+// How much of the glass distortion the logo keeps (0 = perfectly crisp, 1 = fully refracted).
+const float LOGO_GLASS = 0.25;
 
 void main() {
   vec2 frag = gl_FragCoord.xy;
@@ -100,13 +120,21 @@ void main() {
   vec3 c = scene(p + vec2(fringe, 0.0));
   vec3 col = vec3(c.r, (a.g + c.g) * 0.5, a.b);
 
+  // Logo: mostly the crisp, unbent image with a faint refracted copy mixed in, so it stays
+  // clearly legible but still reads as sitting behind the glass.
+  vec4 crisp = logoAt(frag / u_resolution.y);
+  vec4 bent = logoAt(p);
+  vec4 logo = mix(crisp, bent, LOGO_GLASS);
+  col = mix(col, logo.rgb, logo.a);
+  float glass = mix(1.0, LOGO_GLASS, logo.a);  // full flute shading on the backdrop, light on the logo
+
   // Dark groove between flutes and a bright ridge on each one.
   float groove = smoothstep(0.0, 0.09, f) * smoothstep(1.0, 0.91, f);
-  col *= mix(0.7, 1.0, groove);
+  col *= mix(1.0, mix(0.7, 1.0, groove), glass);
   float ridge = pow(max(0.0, 1.0 - abs(f - 0.7) * 4.0), 3.0);
   float luma = dot(col, vec3(0.3, 0.59, 0.11));
   float sweep = exp(-pow((frag.x / u_resolution.x - 0.5 - u_pointer.x * 0.35) * 3.0, 2.0));
-  col += ridge * (0.03 + 0.28 * luma + 0.06 * sweep);
+  col += ridge * (0.03 + 0.28 * luma + 0.06 * sweep) * glass;
 
   col += (hash(frag + fract(u_time) * 97.0) - 0.5) * 0.025;   // film grain, avoids banding
   gl_FragColor = vec4(col, 1.0);
@@ -145,8 +173,9 @@ function createProgram(gl: WebGLRenderingContext) {
  * WebGL fluted-glass backdrop for the hero banner. Renders into its own canvas, pauses when
  * off-screen or in a background tab, and draws a single still frame for reduced-motion users.
  * If WebGL is unavailable the canvas never appears and the CSS `.hero-bg` underneath shows instead.
+ * `logoSrc` (same-origin SVG/PNG) is rasterised once and sampled as a texture inside the scene.
  */
-export function FlutedGlass({ className }: { className?: string }) {
+export function FlutedGlass({ className, logoSrc }: { className?: string; logoSrc?: string }) {
   const hostRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -178,6 +207,20 @@ export function FlutedGlass({ className }: { className?: string }) {
     const uTime = gl.getUniformLocation(program, "u_time");
     const uPointer = gl.getUniformLocation(program, "u_pointer");
     const uDpr = gl.getUniformLocation(program, "u_dpr");
+    const uLogoAspect = gl.getUniformLocation(program, "u_logoAspect");
+    const uHasLogo = gl.getUniformLocation(program, "u_hasLogo");
+
+    // Logo texture: starts as a 1×1 transparent pixel so the sampler is always complete.
+    const texture = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+    gl.uniform1i(gl.getUniformLocation(program, "u_logo"), 0);
+    gl.uniform1f(uHasLogo, 0);
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const pointer = { x: 0, y: 0, targetX: 0, targetY: 0 };
@@ -259,6 +302,31 @@ export function FlutedGlass({ className }: { className?: string }) {
     canvas.addEventListener("webglcontextlost", onContextLost);
     sync();
 
+    // Rasterise the (usually SVG) logo at a fixed height, then upload it as the texture.
+    const logo = new Image();
+    if (logoSrc) {
+      logo.decoding = "async";
+      logo.onload = () => {
+        if (lost) return;
+        const naturalW = logo.naturalWidth || 1024;
+        const naturalH = logo.naturalHeight || 1024;
+        const height = 512;
+        const width = Math.min(2048, Math.max(1, Math.round((height * naturalW) / naturalH)));
+        const raster = document.createElement("canvas");
+        raster.width = width;
+        raster.height = height;
+        raster.getContext("2d")?.drawImage(logo, 0, 0, width, height);
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, raster);
+        gl.uniform1f(uLogoAspect, width / height);
+        gl.uniform1f(uHasLogo, 1);
+        if (!running) draw(performance.now());
+      };
+      logo.onerror = () => console.warn("[fluted-glass] could not load logo:", logoSrc);
+      logo.src = logoSrc;
+    }
+
     return () => {
       running = false;
       cancelAnimationFrame(frame);
@@ -268,12 +336,14 @@ export function FlutedGlass({ className }: { className?: string }) {
       document.removeEventListener("visibilitychange", sync);
       reducedMotion.removeEventListener("change", sync);
       canvas.removeEventListener("webglcontextlost", onContextLost);
+      logo.onload = logo.onerror = null;
+      gl.deleteTexture(texture);
       gl.deleteBuffer(buffer);
       gl.deleteProgram(program);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
       canvas.remove();
     };
-  }, []);
+  }, [logoSrc]);
 
   return <div ref={hostRef} aria-hidden className={cn("pointer-events-none absolute inset-0", className)} />;
 }

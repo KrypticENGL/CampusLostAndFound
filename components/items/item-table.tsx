@@ -44,7 +44,7 @@ export function ItemTable({
               key={item.id}
               className={cn(
                 "group relative border-b border-border/70 transition-colors last:border-0 hover:bg-panel",
-                item.id === highlight && "bg-lime-soft/60 animate-in fade-in duration-500",
+                item.id === highlight && "bg-gold-soft/60 animate-in fade-in duration-500",
                 item.status === "RESOLVED" && "text-muted-foreground",
               )}
             >
@@ -58,7 +58,7 @@ export function ItemTable({
                     {item.name}
                   </Link>
                   {item.id === highlight && (
-                    <span className="rounded-full bg-lime px-2 py-0.5 text-[11px] font-semibold text-white">New</span>
+                    <span className="rounded-full bg-gold px-2 py-0.5 text-[11px] font-semibold text-gold-foreground">New</span>
                   )}
                 </div>
               </td>

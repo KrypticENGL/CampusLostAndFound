@@ -166,7 +166,7 @@ export function ListingExplorer() {
       <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground select-none">
         <input
           type="checkbox"
-          className="size-4 accent-lime"
+          className="size-4 accent-navy"
           checked={includeResolved}
           onChange={(e) => setParam({ includeResolved: String(e.target.checked) })}
         />
@@ -253,7 +253,7 @@ export function ListingExplorer() {
                   )}
                 >
                   {o.value !== "ALL" && (
-                    <span className={cn("size-1.5 rounded-full", o.value === "LOST" ? "bg-violet" : "bg-lime")} aria-hidden />
+                    <span className={cn("size-1.5 rounded-full", o.value === "LOST" ? "bg-navy" : "bg-gold")} aria-hidden />
                   )}
                   {o.label}
                 </button>
